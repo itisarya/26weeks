@@ -240,7 +240,6 @@ body { font-family: var(--sans); font-size: 14px; color: var(--ink); background:
 </head>
 <body>
 
-<!-- ══ SETUP SCREEN ══ -->
 <div class="setup-screen" id="setupScreen">
   <div class="setup-eyebrow">Training Journal</div>
   <div class="setup-title">Set up your challenge</div>
@@ -267,7 +266,6 @@ body { font-family: var(--sans); font-size: 14px; color: var(--ink); background:
   <div class="setup-note">All data stored on this device only.</div>
 </div>
 
-<!-- ══ SETTINGS OVERLAY ══ -->
 <div class="settings-overlay" id="settingsOverlay">
   <div class="settings-close" onclick="closeSettings()">← Back</div>
   <div class="settings-title">Challenge settings</div>
@@ -302,7 +300,6 @@ body { font-family: var(--sans); font-size: 14px; color: var(--ink); background:
   </div>
 </div>
 
-<!-- ══ HEADER ══ -->
 <div class="header" id="mainHeader" style="display:none">
   <div class="header-top">
     <div>
@@ -323,14 +320,12 @@ body { font-family: var(--sans); font-size: 14px; color: var(--ink); background:
   </div>
 </div>
 
-<!-- PULSE -->
 <div class="pulse" id="mainPulse" style="display:none">
   <div class="pulse-label">Today</div>
   <div class="pulse-track"><div class="pulse-fill" id="pulseFill" style="width:0%"></div></div>
   <div class="pulse-pct" id="pulsePct">0%</div>
 </div>
 
-<!-- TABS -->
 <div class="tabs" id="mainTabs" style="display:none">
   <button class="tab active" onclick="switchTab('today')">Today</button>
   <button class="tab" onclick="switchTab('weight')">Weight</button>
@@ -340,7 +335,6 @@ body { font-family: var(--sans); font-size: 14px; color: var(--ink); background:
   <button class="tab" onclick="switchTab('rules')">Rules</button>
 </div>
 
-<!-- ══ TODAY ══ -->
 <div class="page active" id="page-today">
   <div class="warn-banner" id="swimWarn">▸ Missed swim yesterday — don't miss today (no 2-day gaps)</div>
 
@@ -390,14 +384,15 @@ body { font-family: var(--sans); font-size: 14px; color: var(--ink); background:
     <div class="drow-gutter"><span class="drow-sym">▸</span></div>
     <div class="drow-body">
       <div class="drow-name">Lunch</div>
-      <div class="drow-sub">90–100g atta/rice · 300g sabzi · protein</div>
+      <div class="drow-sub">90–100g roti/rice · 300g sabzi · protein</div>
     </div>
     <div class="drow-right" id="dr-lunch">—</div>
   </div>
   <div class="sub-tray" id="so-lunch">
-    <span class="sub-chip" onclick="chip(event,'lunch','Atta')">Atta</span>
+    <span class="sub-chip" onclick="chip(event,'lunch','Roti')">Roti</span>
     <span class="sub-chip" onclick="chip(event,'lunch','Rice')">Rice</span>
     <span style="font-size:9px;color:var(--dim);align-self:center">+</span>
+    <span class="sub-chip" onclick="chip(event,'lunch','Eggs')">Eggs</span>
     <span class="sub-chip" onclick="chip(event,'lunch','Chicken')">Chicken</span>
     <span class="sub-chip" onclick="chip(event,'lunch','Fish')">Fish</span>
     <span class="sub-chip" onclick="chip(event,'lunch','Dal')">Dal</span>
@@ -475,7 +470,6 @@ body { font-family: var(--sans); font-size: 14px; color: var(--ink); background:
   <div class="sec-gap"></div>
 </div>
 
-<!-- ══ WEIGHT ══ -->
 <div class="page" id="page-weight">
   <div class="w-log-row">
     <input class="w-log-input" type="number" id="wInput" placeholder="78.5" step="0.1" min="30" max="250">
@@ -501,7 +495,6 @@ body { font-family: var(--sans); font-size: 14px; color: var(--ink); background:
   <div id="wHistList"><div class="empty">No weigh-ins logged yet</div></div>
 </div>
 
-<!-- ══ STREAKS ══ -->
 <div class="page" id="page-streaks">
   <div class="sec-gap"></div>
   <div class="sk-grid">
@@ -526,7 +519,6 @@ body { font-family: var(--sans); font-size: 14px; color: var(--ink); background:
   <div class="sec-gap"></div>
 </div>
 
-<!-- ══ LOG ══ -->
 <div class="page" id="page-log">
   <div class="sec-gap"></div>
   <div class="sec-label" id="logLabel">▪ Activity log</div>
@@ -534,36 +526,34 @@ body { font-family: var(--sans); font-size: 14px; color: var(--ink); background:
   <div class="sec-gap"></div>
 </div>
 
-<!-- ══ PLAN (DYNAMIC TAB) ══ -->
 <div class="page" id="page-plan">
   <div id="planContainer"></div>
 </div>
 
-<!-- ══ RULES ══ -->
 <div class="page" id="page-rules">
   <div class="sec-gap"></div>
   <div class="sec-label">▪ Non-negotiable rules</div>
   <div style="font-size: 11px; color: var(--ink2); line-height: 1.6; border-bottom: 1px solid var(--rule); padding: 0 18px 12px; margin-bottom: 12px;">
-    • <strong>Weigh yourself weekly</strong> — morning, post-toilet, before eating. Track a 4-week average, not day-to-day.[cite: 2]<br><br>
-    • <strong>Protein first</strong> — eat your eggs/sabji before you touch the roti or rice.[cite: 2]<br><br>
-    • <strong>Every 4 weeks = deload</strong> — swim 50% volume, skip one lift session.[cite: 2]<br><br>
-    • <strong>Sleep 7–8 hours</strong> — this is where fat loss and muscle gain actually happen.[cite: 2]<br><br>
-    • <strong>10,000 steps</strong> — walk during calls, use stairs, brief walks after lunch.[cite: 2]<br><br>
-    • <strong>Take photos every 4 weeks</strong> — scale can stay flat while you visibly change shape.[cite: 2]
+    • <strong>Weigh yourself weekly</strong> — morning, post-toilet, before eating. Track a 4-week average, not day-to-day.<br><br>
+    • <strong>Protein first</strong> — eat your eggs/sabji before you touch the roti or rice.<br><br>
+    • <strong>Every 4 weeks = deload</strong> — swim 50% volume, skip one lift session.<br><br>
+    • <strong>Sleep 7–8 hours</strong> — this is where fat loss and muscle gain actually happen.<br><br>
+    • <strong>10,000 steps</strong> — walk during calls, use stairs, brief walks after lunch.<br><br>
+    • <strong>Take photos every 4 weeks</strong> — scale can stay flat while you visibly change shape.
   </div>
   
   <div class="sec-label">▪ When the scale stalls</div>
   <div style="font-size: 11px; color: var(--ink2); line-height: 1.6; border-bottom: 1px solid var(--rule); padding: 0 18px 12px; margin-bottom: 12px;">
-    • <strong>2–3 weeks:</strong> Isn't a plateau (water retention/period). Wait it out.[cite: 2]<br><br>
-    • <strong>4+ weeks:</strong> Check calories first. Track everything for one week.[cite: 2]<br><br>
-    • <strong>If genuinely stalled:</strong> Add 20 min walk after dinner. Don't cut more food yet.[cite: 2]
+    • <strong>2–3 weeks:</strong> Isn't a plateau (water retention/period). Wait it out.<br><br>
+    • <strong>4+ weeks:</strong> Check calories first. Track everything for one week.<br><br>
+    • <strong>If genuinely stalled:</strong> Add 20 min walk after dinner. Don't cut more food yet.
   </div>
 
   <div class="sec-label">▪ Menstrual cycle</div>
   <div style="font-size: 11px; color: var(--ink2); line-height: 1.6; border-bottom: 1px solid var(--rule); padding: 0 18px 12px; margin-bottom: 12px;">
-    • <strong>Week before:</strong> 1–2 kg water weight gain is normal. Don't restrict more. Add 1 roti if craving.[cite: 2]<br><br>
-    • <strong>During:</strong> Replace one swim with an easy 30 min walk if energy tanks.[cite: 2]<br><br>
-    • <strong>Post-period (days 1–14):</strong> Power window. Hit your hardest sessions here.[cite: 2]
+    • <strong>Week before:</strong> 1–2 kg water weight gain is normal. Don't restrict more. Add 1 roti if craving.<br><br>
+    • <strong>During:</strong> Replace one swim with an easy 30 min walk if energy tanks.<br><br>
+    • <strong>Post-period (days 1–14):</strong> Power window. Hit your hardest sessions here.
   </div>
   <div class="sec-gap"></div>
 </div>
@@ -586,8 +576,18 @@ function isWeekend(ds){ const d=dow(ds); return d===0||d===6; }
 function isPGD(){ return TD>='2025-08-08'; }
 
 function daysLeft(){
-  if(!S.cfg||!S.cfg.end) return '—';
-  return Math.max(0,Math.ceil((new Date(S.cfg.end+'T23:59:59')-new Date())/86400000));
+  if(!S.cfg||!S.cfg.end||!S.cfg.start) return '—';
+  const now = new Date();
+  const end = new Date(S.cfg.end+'T23:59:59');
+  const start = new Date(S.cfg.start+'T00:00:00');
+  
+  if (now < start) {
+    // If the challenge hasn't started yet, show the total duration of the challenge
+    return Math.max(0, Math.ceil((end - start) / 86400000));
+  }
+  
+  // If the challenge has started, show days remaining from today
+  return Math.max(0, Math.ceil((end - now) / 86400000));
 }
 
 function fmtDate(ds){
@@ -741,7 +741,9 @@ function toggleMeal(key){
   applyCheck(key,d[key]);
   const so=document.getElementById('so-'+key);
   if(so) so.classList.toggle('open',!!d[key]);
-  save(); updateCompletion();
+  
+  // FIX: Added renderHeatmap() so the heatmap updates when food is toggled
+  save(); updateCompletion(); renderHeatmap(); 
 }
 
 function chip(e,meal,val){
