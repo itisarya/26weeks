@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f5f0e6">
+<title>Training Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sentient:ital,wght@0,400;0,500;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow-x: hidden; background: #f5f0e6; }
+
+:root {
+  --cream: #f5f0e6;
+  --cream2: #ede8da;
+  --cream3: #e4dece;
+  --ink: #1a1612;
+  --ink2: #3a3530;
+  --muted: #8a7d6a;
+  --dim: #b0a690;
+  --rule: #e0d9cc;
+  --rule2: #c8bfaa;
+  --red: #9e1a1a;
+  --red2: #c42020;
+  --red-pale: #f2e8e8;
+  --serif: 'Instrument Serif', Georgia, serif;
+  --sans: 'Sentient', Georgia, serif;
+}
+
+body { font-family: var(--sans); font-size: 14px; color: var(--ink); background: var(--cream); }
+
+/* ── SETUP SCREEN ── */
+.setup-screen {
+  position: fixed; inset: 0; background: var(--cream);
+  z-index: 999; display: flex; flex-direction: column;
+  padding: 40px 24px 32px; justify-content: center;
+}
+.setup-screen.hidden { display: none; }
+.setup-eyebrow { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.setup-title { font-family: var(--serif); font-size: 32px; font-style: italic; color: var(--ink); line-height: 1.1; margin-bottom: 6px; }
+.setup-sub { font-size: 12px; color: var(--muted); margin-bottom: 36px; letter-spacing: 0.03em; line-height: 1.6; }
+.setup-field { margin-bottom: 20px; }
+.setup-label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 7px; }
+.setup-input {
+  width: 100%; background: transparent;
+  border: none; border-bottom: 1px solid var(--rule2);
+  font-family: var(--sans); font-size: 16px; color: var(--ink);
+  padding: 6px 0; outline: none;
+}
+.setup-input:focus { border-bottom-color: var(--red); }
+.setup-input[type="date"] { font-size: 14px; }
+.setup-btn {
+  width: 100%; margin-top: 16px;
+  background: var(--ink); color: var(--cream);
+  border: none; font-family: var(--sans);
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 14px; cursor: pointer;
+}
+.setup-btn:active { background: var(--red); }
+.setup-note { font-size: 10px; color: var(--dim); text-align: center; margin-top: 16px; letter-spacing: 0.04em; }
+
+/* ── HEADER ── */
+.header { padding: 16px 18px 12px; border-bottom: 1px solid var(--rule2); background: var(--cream); position: sticky; top: 0; z-index: 100; }
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-eyebrow { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.header-title { font-family: var(--serif); font-size: 24px; font-style: italic; color: var(--ink); line-height: 1; letter-spacing: -0.01em; }
+.header-right { text-align: right; flex-shrink: 0; }
+.days-num { font-family: var(--serif); font-size: 30px; font-style: italic; color: var(--ink); line-height: 1; }
+.days-lbl { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.header-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.header-date { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+.header-range { font-size: 10px; color: var(--dim); letter-spacing: 0.04em; }
+.header-settings { font-size: 11px; color: var(--dim); cursor: pointer; letter-spacing: 0.1em; padding: 2px 0; }
+.header-settings:active { color: var(--red); }
+
+/* ── PULSE BAR ── */
+.pulse { display: flex; align-items: center; gap: 10px; padding: 7px 18px; background: var(--cream2); border-bottom: 1px solid var(--rule2); }
+.pulse-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.pulse-track { flex: 1; height: 1px; background: var(--rule2); position: relative; }
+.pulse-fill { position: absolute; top: 0; left: 0; height: 1px; background: var(--red); transition: width 0.5s ease; }
+.pulse-pct { font-size: 11px; font-weight: 500; color: var(--red); min-width: 32px; text-align: right; }
+
+/* ── TABS ── */
+.tabs { display: flex; border-bottom: 1px solid var(--rule2); background: var(--cream); padding: 0 18px; overflow-x: auto; scrollbar-width: none; position: sticky; top: 92px; z-index: 99; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { font-family: var(--sans); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); padding: 9px 16px 8px; border-bottom: 1.5px solid transparent; cursor: pointer; white-space: nowrap; flex-shrink: 0; background: none; border-top: none; border-left: none; border-right: none; }
+.tab:first-child { padding-left: 0; }
+.tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+/* ── PAGE ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── SECTION LABEL ── */
+.sec-gap { height: 20px; }
+.sec-gap-sm { height: 12px; }
+.sec-label { padding: 0 18px 7px; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
+.sec-label-meta { color: var(--red); }
+
+/* ── DATA ROW ── */
+.drow {
+  display: grid; grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  border-top: 1px solid var(--rule);
+  padding: 11px 18px 11px 0;
+  cursor: pointer; background: transparent;
+  transition: background 0.1s;
+}
+.drow:last-of-type { border-bottom: 1px solid var(--rule); }
+.drow:active { background: var(--cream2); }
+.drow.na { opacity: 0.35; pointer-events: none; }
+.drow-gutter { width: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.drow-sym { font-size: 9px; color: var(--rule2); transition: color 0.15s; }
+.drow.checked .drow-sym { color: var(--red); }
+.drow-body { min-width: 0; }
+.drow-name { font-family: var(--sans); font-size: 14px; color: var(--ink); line-height: 1.25; }
+.drow.checked .drow-name { color: var(--dim); text-decoration: line-through; text-decoration-color: var(--rule2); }
+.drow-sub { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: 0.02em; }
+.drow-right { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); white-space: nowrap; padding-left: 10px; }
+.drow.checked .drow-right { color: var(--red); }
+
+/* ── SUB TRAY ── */
+.sub-tray { display: none; background: var(--cream2); border-bottom: 1px solid var(--rule); padding: 8px 18px 8px 28px; gap: 6px; flex-wrap: wrap; }
+.sub-tray.open { display: flex; }
+.sub-chip { font-family: var(--sans); font-size: 10px; padding: 4px 10px; border: 0.5px solid var(--rule2); background: var(--cream); color: var(--muted); cursor: pointer; letter-spacing: 0.04em; }
+.sub-chip.on { background: var(--red-pale); border-color: var(--red); color: var(--red); }
+
+/* ── WARN BANNER ── */
+.warn-banner { display: none; background: var(--red-pale); border-left: 2px solid var(--red); padding: 9px 18px 9px 14px; font-size: 11px; color: var(--red); letter-spacing: 0.03em; line-height: 1.5; }
+
+/* ── HEATMAP ── */
+.heatmap-wrap { padding: 0 18px 4px; }
+.hm-day-row { display: grid; grid-template-columns: repeat(7,1fr); gap: 0; margin-bottom: 3px; }
+.hm-day-lbl { font-size: 8px; color: var(--dim); letter-spacing: 0.08em; text-align: center; text-transform: uppercase; }
+.hm-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.hm-cell { aspect-ratio: 1; border-radius: 1px; }
+.hm-0 { background: #ece7da; }
+.hm-1 { background: #dbb8b8; }
+.hm-2 { background: #c48080; }
+.hm-3 { background: #a84040; }
+.hm-4 { background: #9e1a1a; }
+.hm-f { background: transparent; border: 0.5px solid var(--rule); }
+.hm-today { outline: 1.5px solid var(--red); outline-offset: 1px; }
+.hm-legend { display: flex; align-items: center; gap: 5px; margin-top: 8px; }
+.hm-leg-swatch { width: 9px; height: 9px; border-radius: 1px; }
+.hm-leg-lbl { font-size: 9px; color: var(--dim); letter-spacing: 0.08em; }
+
+/* ── WEIGHT PAGE ── */
+.w-log-row { display: grid; grid-template-columns: 1fr 36px auto; border-bottom: 1px solid var(--rule2); align-items: stretch; }
+.w-log-input { background: transparent; border: none; font-family: var(--sans); font-size: 22px; font-weight: 500; color: var(--ink); padding: 12px 0 12px 18px; outline: none; width: 100%; }
+.w-log-input::placeholder { color: var(--rule2); font-size: 16px; font-weight: 400; }
+.w-log-unit { font-size: 11px; color: var(--muted); display: flex; align-items: center; border-left: 1px solid var(--rule); border-right: 1px solid var(--rule); padding: 0 8px; }
+.w-log-btn { background: var(--ink); color: var(--cream); border: none; font-family: var(--sans); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; padding: 0 18px; cursor: pointer; }
+.w-log-btn:active { background: var(--red); }
+
+.w-goal-row { display: grid; grid-template-columns: auto 1fr auto auto; align-items: stretch; border-bottom: 1px solid var(--rule); }
+.w-goal-lbl { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); padding: 10px 12px 10px 18px; display: flex; align-items: center; white-space: nowrap; border-right: 1px solid var(--rule); }
+.w-goal-input { background: transparent; border: none; font-family: var(--sans); font-size: 15px; color: var(--ink); padding: 10px 10px; outline: none; }
+.w-goal-input::placeholder { color: var(--rule2); font-size: 12px; }
+.w-goal-kg { font-size: 10px; color: var(--muted); display: flex; align-items: center; padding: 0 10px; border-left: 1px solid var(--rule); border-right: 1px solid var(--rule); white-space: nowrap; }
+.w-goal-set { background: transparent; color: var(--red); border: none; font-family: var(--sans); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; padding: 0 16px; cursor: pointer; }
+
+.w-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid var(--rule); }
+.w-stat { padding: 10px 14px; border-right: 1px solid var(--rule); }
+.w-stat:last-child { border-right: none; }
+.w-stat-lbl { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.w-stat-val { font-family: var(--serif); font-size: 18px; font-style: italic; color: var(--ink); line-height: 1; }
+.w-stat-val.red { color: var(--red); }
+.w-stat-val.grn { color: #3a6e3a; }
+
+.chart-wrap { padding: 16px 18px 8px; border-bottom: 1px solid var(--rule); }
+.chart-title { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+
+.w-hist-row { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; padding: 8px 18px; border-bottom: 1px solid var(--rule); gap: 10px; }
+.w-hist-date { font-size: 10px; color: var(--muted); }
+.w-hist-val { font-size: 13px; font-weight: 500; color: var(--ink); font-family: var(--sans); }
+.w-hist-delta { font-size: 10px; font-weight: 500; min-width: 40px; text-align: right; }
+.w-hist-del { font-size: 11px; color: var(--dim); cursor: pointer; padding: 2px 4px; }
+.w-hist-del:active { color: var(--red); }
+
+/* ── STREAKS PAGE ── */
+.sk-grid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); margin: 0 18px; }
+.sk { padding: 14px 14px 12px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.sk-num { font-family: var(--serif); font-size: 36px; font-style: italic; color: var(--ink); line-height: 1; }
+.sk-num.red { color: var(--red); }
+.sk-lbl { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+.sk-sub { font-size: 9px; color: var(--dim); margin-top: 2px; }
+
+.stat-row { display: grid; grid-template-columns: 1fr auto; padding: 8px 18px; border-bottom: 1px solid var(--rule); align-items: center; }
+.stat-lbl { font-size: 11px; color: var(--muted); }
+.stat-val { font-size: 12px; font-weight: 500; color: var(--ink); }
+
+/* ── HISTORY ── */
+.hist-day { border-bottom: 1px solid var(--rule); }
+.hist-hd { display: grid; grid-template-columns: 1fr auto 50px; align-items: center; gap: 10px; padding: 8px 18px; background: var(--cream2); border-bottom: 1px solid var(--rule); }
+.hist-date { font-size: 11px; font-weight: 500; color: var(--ink); }
+.hist-prog { height: 1px; background: var(--rule2); position: relative; }
+.hist-prog-fill { position: absolute; top: 0; left: 0; height: 1px; background: var(--red); }
+.hist-pct { font-size: 10px; font-weight: 500; text-align: right; }
+.hist-pct.full { color: var(--red); }
+.hist-pct.part { color: var(--muted); }
+.hist-pct.zero { color: var(--dim); }
+.hist-body { padding: 8px 18px; }
+.hist-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.hist-tag { font-size: 9px; padding: 2px 7px; border: 0.5px solid var(--rule2); color: var(--dim); letter-spacing: 0.04em; }
+.hist-tag.done { background: var(--red-pale); border-color: #d4a0a0; color: var(--red); }
+
+/* ── SETTINGS OVERLAY ── */
+.settings-overlay { display: none; position: fixed; inset: 0; background: var(--cream); z-index: 500; padding: 32px 24px; overflow-y: auto; }
+.settings-overlay.open { display: block; }
+.settings-close { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); cursor: pointer; margin-bottom: 24px; display: inline-block; }
+.settings-close:active { color: var(--red); }
+.settings-title { font-family: var(--serif); font-size: 26px; font-style: italic; color: var(--ink); margin-bottom: 6px; }
+.settings-sub { font-size: 11px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+.settings-field { margin-bottom: 22px; }
+.settings-label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 8px; }
+.settings-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--rule2); font-family: var(--sans); font-size: 15px; color: var(--ink); padding: 6px 0; outline: none; }
+.settings-input:focus { border-bottom-color: var(--red); }
+.settings-save { width: 100%; background: var(--ink); color: var(--cream); border: none; font-family: var(--sans); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; padding: 13px; cursor: pointer; margin-top: 8px; }
+.settings-save:active { background: var(--red); }
+.settings-danger { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--rule); }
+.settings-danger-title { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+.settings-reset { width: 100%; background: transparent; color: var(--muted); border: 1px solid var(--rule2); font-family: var(--sans); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; padding: 11px; cursor: pointer; }
+.settings-reset:active { color: var(--red); border-color: var(--red); }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--rule); margin: 0 18px; }
+
+/* ── EMPTY ── */
+.empty { padding: 36px 18px; font-size: 10px; color: var(--dim); letter-spacing: 0.12em; text-transform: uppercase; text-align: center; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--ink); color: var(--cream); font-family: var(--sans); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; padding: 9px 20px; z-index: 999; pointer-events: none; transition: transform 0.25s ease; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP SCREEN ══ -->
+<div class="setup-screen" id="setupScreen">
+  <div class="setup-eyebrow">Training Journal</div>
+  <div class="setup-title">Set up your challenge</div>
+  <div class="setup-sub">Define your window. Everything will be tracked and measured against these dates.</div>
+
+  <div class="setup-field">
+    <label class="setup-label">Challenge name</label>
+    <input class="setup-input" id="su-name" type="text" placeholder="e.g. The Dec 31 Challenge" maxlength="40" value="26-Week Body Recomp">
+  </div>
+  <div class="setup-field">
+    <label class="setup-label">Start date</label>
+    <input class="setup-input" id="su-start" type="date" value="2026-07-01">
+  </div>
+  <div class="setup-field">
+    <label class="setup-label">End date</label>
+    <input class="setup-input" id="su-end" type="date" value="2026-12-31">
+  </div>
+  <div class="setup-field">
+    <label class="setup-label">Your name (optional)</label>
+    <input class="setup-input" id="su-person" type="text" placeholder="e.g. Arya" maxlength="30">
+  </div>
+
+  <button class="setup-btn" onclick="setupSave()">Begin challenge ▸</button>
+  <div class="setup-note">All data stored on this device only.</div>
+</div>
+
+<!-- ══ SETTINGS OVERLAY ══ -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-close" onclick="closeSettings()">← Back</div>
+  <div class="settings-title">Challenge settings</div>
+  <div class="settings-sub">Update your challenge window or name. Your logged data won't be affected.</div>
+
+  <div class="settings-field">
+    <label class="settings-label">Challenge name</label>
+    <input class="settings-input" id="cfg-name" type="text" maxlength="40">
+  </div>
+  <div class="settings-field">
+    <label class="settings-label">Start date</label>
+    <input class="settings-input" id="cfg-start" type="date">
+  </div>
+  <div class="settings-field">
+    <label class="settings-label">End date</label>
+    <input class="settings-input" id="cfg-end" type="date">
+  </div>
+  <div class="settings-field">
+    <label class="settings-label">Your name</label>
+    <input class="settings-input" id="cfg-person" type="text" maxlength="30">
+  </div>
+  <div class="settings-field">
+    <label class="settings-label">Goal weight (kg)</label>
+    <input class="settings-input" id="cfg-goal" type="number" step="0.5" min="30" max="250">
+  </div>
+
+  <button class="settings-save" onclick="saveSettings()">Save changes</button>
+
+  <div class="settings-danger">
+    <div class="settings-danger-title">Danger zone</div>
+    <button class="settings-reset" onclick="resetAll()">Reset all data and start over</button>
+  </div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<div class="header" id="mainHeader" style="display:none">
+  <div class="header-top">
+    <div>
+      <div class="header-eyebrow">Training Journal</div>
+      <div class="header-title" id="hdrTitle">The Challenge</div>
+    </div>
+    <div class="header-right">
+      <div class="days-num" id="hdrDays">—</div>
+      <div class="days-lbl">days left</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="header-date" id="hdrDate"></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="header-range" id="hdrRange"></div>
+      <div class="header-settings" onclick="openSettings()">⚙</div>
+    </div>
+  </div>
+</div>
+
+<!-- PULSE -->
+<div class="pulse" id="mainPulse" style="display:none">
+  <div class="pulse-label">Today</div>
+  <div class="pulse-track"><div class="pulse-fill" id="pulseFill" style="width:0%"></div></div>
+  <div class="pulse-pct" id="pulsePct">0%</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs" id="mainTabs" style="display:none">
+  <button class="tab active" onclick="switchTab('today')">Today</button>
+  <button class="tab" onclick="switchTab('weight')">Weight</button>
+  <button class="tab" onclick="switchTab('streaks')">Streaks</button>
+  <button class="tab" onclick="switchTab('log')">Log</button>
+  <button class="tab" onclick="switchTab('plan')">Plan</button>
+  <button class="tab" onclick="switchTab('rules')">Rules</button>
+</div>
+
+<!-- ══ TODAY ══ -->
+<div class="page active" id="page-today">
+  <div class="warn-banner" id="swimWarn">▸ Missed swim yesterday — don't miss today (no 2-day gaps)</div>
+
+  <div class="sec-gap"></div>
+  <div class="sec-label"><span>▪ Fitness</span><span class="sec-label-meta" id="fitMeta"></span></div>
+
+  <div class="drow" id="ci-gym" onclick="toggle('gym')">
+    <div class="drow-gutter"><span class="drow-sym">▪</span></div>
+    <div class="drow-body">
+      <div class="drow-name">Gym</div>
+      <div class="drow-sub" id="gymSub">Mon · Wed · Fri</div>
+    </div>
+    <div class="drow-right" id="dr-gym">—</div>
+  </div>
+
+  <div class="drow" id="ci-swim" onclick="toggle('swim')">
+    <div class="drow-gutter"><span class="drow-sym">▸</span></div>
+    <div class="drow-body">
+      <div class="drow-name">Swimming</div>
+      <div class="drow-sub">6/7 days target — no 2-day gaps</div>
+    </div>
+    <div class="drow-right" id="dr-swim">—</div>
+  </div>
+
+  <div class="sec-gap"></div>
+  <div class="sec-label"><span>▪ Food</span><span class="sec-label-meta" id="foodMeta"></span></div>
+
+  <div class="drow" id="ci-diet" onclick="toggle('diet')">
+    <div class="drow-gutter"><span class="drow-sym">▪</span></div>
+    <div class="drow-body">
+      <div class="drow-name">Diet locked</div>
+      <div class="drow-sub">All meals clean · no random snacks</div>
+    </div>
+    <div class="drow-right" id="dr-diet">—</div>
+  </div>
+
+  <div class="drow" id="ci-breakfast" onclick="toggleMeal('breakfast')">
+    <div class="drow-gutter"><span class="drow-sym">▸</span></div>
+    <div class="drow-body">
+      <div class="drow-name">Breakfast</div>
+      <div class="drow-sub">3 eggs · 2 bread slices</div>
+    </div>
+    <div class="drow-right" id="dr-breakfast">—</div>
+  </div>
+
+  <div class="drow" id="ci-lunch" onclick="toggleMeal('lunch')">
+    <div class="drow-gutter"><span class="drow-sym">▸</span></div>
+    <div class="drow-body">
+      <div class="drow-name">Lunch</div>
+      <div class="drow-sub">90–100g atta/rice · 300g sabzi · protein</div>
+    </div>
+    <div class="drow-right" id="dr-lunch">—</div>
+  </div>
+  <div class="sub-tray" id="so-lunch">
+    <span class="sub-chip" onclick="chip(event,'lunch','Atta')">Atta</span>
+    <span class="sub-chip" onclick="chip(event,'lunch','Rice')">Rice</span>
+    <span style="font-size:9px;color:var(--dim);align-self:center">+</span>
+    <span class="sub-chip" onclick="chip(event,'lunch','Chicken')">Chicken</span>
+    <span class="sub-chip" onclick="chip(event,'lunch','Fish')">Fish</span>
+    <span class="sub-chip" onclick="chip(event,'lunch','Dal')">Dal</span>
+    <span class="sub-chip" onclick="chip(event,'lunch','Paneer')">Paneer</span>
+    <span class="sub-chip" onclick="chip(event,'lunch','Curd')">Curd</span>
+  </div>
+
+  <div class="drow" id="ci-whey" onclick="toggle('whey')">
+    <div class="drow-gutter"><span class="drow-sym">▸</span></div>
+    <div class="drow-body">
+      <div class="drow-name">Post-swim whey</div>
+      <div class="drow-sub">1 scoop · only if swam today</div>
+    </div>
+    <div class="drow-right" id="dr-whey">—</div>
+  </div>
+
+  <div class="drow" id="ci-dinner" onclick="toggleMeal('dinner')">
+    <div class="drow-gutter"><span class="drow-sym">▸</span></div>
+    <div class="drow-body">
+      <div class="drow-name">Dinner</div>
+      <div class="drow-sub">Light · eggs / chicken / paneer / curd · no roti</div>
+    </div>
+    <div class="drow-right" id="dr-dinner">—</div>
+  </div>
+  <div class="sub-tray" id="so-dinner">
+    <span class="sub-chip" onclick="chip(event,'dinner','Eggs')">Eggs</span>
+    <span class="sub-chip" onclick="chip(event,'dinner','Chicken')">Chicken</span>
+    <span class="sub-chip" onclick="chip(event,'dinner','Paneer')">Paneer</span>
+    <span class="sub-chip" onclick="chip(event,'dinner','Curd')">Curd</span>
+  </div>
+
+  <div class="sec-gap"></div>
+  <div class="sec-label"><span>▪ Website</span><span class="sec-label-meta" id="webMeta">0/2 this week</span></div>
+
+  <div class="drow" id="ci-website" onclick="toggle('website')">
+    <div class="drow-gutter"><span class="drow-sym">▸</span></div>
+    <div class="drow-body">
+      <div class="drow-name">Dev session</div>
+      <div class="drow-sub">30–60 min · improve or publish something</div>
+    </div>
+    <div class="drow-right" id="dr-website">—</div>
+  </div>
+
+  <div id="pgdBlock" style="display:none">
+    <div class="sec-gap"></div>
+    <div class="sec-label"><span>▪ PGD study</span><span style="font-size:9px;color:var(--dim)">weekend only</span></div>
+    <div class="drow" id="ci-pgd" onclick="toggle('pgd')">
+      <div class="drow-gutter"><span class="drow-sym">▸</span></div>
+      <div class="drow-body">
+        <div class="drow-name">Study session</div>
+        <div class="drow-sub">3–4 hours · Sat & Sun</div>
+      </div>
+      <div class="drow-right" id="dr-pgd">—</div>
+    </div>
+  </div>
+
+  <div class="sec-gap"></div>
+  <div class="sec-label">▪ Activity heatmap</div>
+  <div class="heatmap-wrap">
+    <div class="hm-day-row">
+      <div class="hm-day-lbl">M</div><div class="hm-day-lbl">T</div><div class="hm-day-lbl">W</div>
+      <div class="hm-day-lbl">T</div><div class="hm-day-lbl">F</div><div class="hm-day-lbl">S</div><div class="hm-day-lbl">S</div>
+    </div>
+    <div class="hm-grid" id="hmGrid"></div>
+    <div class="hm-legend">
+      <span class="hm-leg-lbl">less</span>
+      <div class="hm-leg-swatch" style="background:#ece7da"></div>
+      <div class="hm-leg-swatch" style="background:#dbb8b8"></div>
+      <div class="hm-leg-swatch" style="background:#c48080"></div>
+      <div class="hm-leg-swatch" style="background:#a84040"></div>
+      <div class="hm-leg-swatch" style="background:#9e1a1a"></div>
+      <span class="hm-leg-lbl">more</span>
+    </div>
+  </div>
+  <div class="sec-gap"></div>
+</div>
+
+<!-- ══ WEIGHT ══ -->
+<div class="page" id="page-weight">
+  <div class="w-log-row">
+    <input class="w-log-input" type="number" id="wInput" placeholder="78.5" step="0.1" min="30" max="250">
+    <div class="w-log-unit">kg</div>
+    <button class="w-log-btn" onclick="logWeight()">Log</button>
+  </div>
+  <div class="w-goal-row">
+    <div class="w-goal-lbl">Goal</div>
+    <input class="w-goal-input" type="number" id="wGoalInput" placeholder="72.0" step="0.5" min="30" max="250">
+    <div class="w-goal-kg">kg</div>
+    <button class="w-goal-set" onclick="saveGoalWeight()">Set ▸</button>
+  </div>
+  <div class="w-stats">
+    <div class="w-stat"><div class="w-stat-lbl">Current</div><div class="w-stat-val" id="ws-cur">—</div></div>
+    <div class="w-stat"><div class="w-stat-lbl">To goal</div><div class="w-stat-val red" id="ws-gap">—</div></div>
+    <div class="w-stat"><div class="w-stat-lbl">7d trend</div><div class="w-stat-val" id="ws-trend">—</div></div>
+  </div>
+  <div class="chart-wrap">
+    <div class="chart-title">▪ Weight over time</div>
+    <canvas id="wChart" height="160"></canvas>
+  </div>
+  <div class="sec-label" style="padding-top:16px;">▪ History</div>
+  <div id="wHistList"><div class="empty">No weigh-ins logged yet</div></div>
+</div>
+
+<!-- ══ STREAKS ══ -->
+<div class="page" id="page-streaks">
+  <div class="sec-gap"></div>
+  <div class="sk-grid">
+    <div class="sk"><div class="sk-num red" id="sk-overall">0</div><div class="sk-lbl">Overall</div><div class="sk-sub">days ≥ 80%</div></div>
+    <div class="sk"><div class="sk-num" id="sk-swim">0</div><div class="sk-lbl">Swim</div><div class="sk-sub">consecutive days</div></div>
+    <div class="sk"><div class="sk-num" id="sk-gym">0</div><div class="sk-lbl">Gym</div><div class="sk-sub">consecutive sessions</div></div>
+    <div class="sk"><div class="sk-num" id="sk-diet">0</div><div class="sk-lbl">Diet</div><div class="sk-sub">clean days</div></div>
+  </div>
+
+  <div class="sec-gap"></div>
+  <div class="sec-label">▪ This week</div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:0;margin:0 18px 3px;">
+    <div class="hm-day-lbl">M</div><div class="hm-day-lbl">T</div><div class="hm-day-lbl">W</div>
+    <div class="hm-day-lbl">T</div><div class="hm-day-lbl">F</div><div class="hm-day-lbl">S</div><div class="hm-day-lbl">S</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:0 18px 20px;" id="weekGrid"></div>
+
+  <div class="divider"></div>
+  <div class="sec-gap-sm"></div>
+  <div class="sec-label">▪ Mission stats</div>
+  <div id="statsRows"></div>
+  <div class="sec-gap"></div>
+</div>
+
+<!-- ══ LOG ══ -->
+<div class="page" id="page-log">
+  <div class="sec-gap"></div>
+  <div class="sec-label" id="logLabel">▪ Activity log</div>
+  <div id="logList"><div class="empty">Nothing logged yet — complete your first day</div></div>
+  <div class="sec-gap"></div>
+</div>
+
+<!-- ══ PLAN (DYNAMIC TAB) ══ -->
+<div class="page" id="page-plan">
+  <div id="planContainer"></div>
+</div>
+
+<!-- ══ RULES ══ -->
+<div class="page" id="page-rules">
+  <div class="sec-gap"></div>
+  <div class="sec-label">▪ Non-negotiable rules</div>
+  <div style="font-size: 11px; color: var(--ink2); line-height: 1.6; border-bottom: 1px solid var(--rule); padding: 0 18px 12px; margin-bottom: 12px;">
+    • <strong>Weigh yourself weekly</strong> — morning, post-toilet, before eating. Track a 4-week average, not day-to-day.[cite: 2]<br><br>
+    • <strong>Protein first</strong> — eat your eggs/sabji before you touch the roti or rice.[cite: 2]<br><br>
+    • <strong>Every 4 weeks = deload</strong> — swim 50% volume, skip one lift session.[cite: 2]<br><br>
+    • <strong>Sleep 7–8 hours</strong> — this is where fat loss and muscle gain actually happen.[cite: 2]<br><br>
+    • <strong>10,000 steps</strong> — walk during calls, use stairs, brief walks after lunch.[cite: 2]<br><br>
+    • <strong>Take photos every 4 weeks</strong> — scale can stay flat while you visibly change shape.[cite: 2]
+  </div>
+  
+  <div class="sec-label">▪ When the scale stalls</div>
+  <div style="font-size: 11px; color: var(--ink2); line-height: 1.6; border-bottom: 1px solid var(--rule); padding: 0 18px 12px; margin-bottom: 12px;">
+    • <strong>2–3 weeks:</strong> Isn't a plateau (water retention/period). Wait it out.[cite: 2]<br><br>
+    • <strong>4+ weeks:</strong> Check calories first. Track everything for one week.[cite: 2]<br><br>
+    • <strong>If genuinely stalled:</strong> Add 20 min walk after dinner. Don't cut more food yet.[cite: 2]
+  </div>
+
+  <div class="sec-label">▪ Menstrual cycle</div>
+  <div style="font-size: 11px; color: var(--ink2); line-height: 1.6; border-bottom: 1px solid var(--rule); padding: 0 18px 12px; margin-bottom: 12px;">
+    • <strong>Week before:</strong> 1–2 kg water weight gain is normal. Don't restrict more. Add 1 roti if craving.[cite: 2]<br><br>
+    • <strong>During:</strong> Replace one swim with an easy 30 min walk if energy tanks.[cite: 2]<br><br>
+    • <strong>Post-period (days 1–14):</strong> Power window. Hit your hardest sessions here.[cite: 2]
+  </div>
+  <div class="sec-gap"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SK = 'tj_v4';
+let S = { cfg: null, days: {}, weights: [], goalWeight: null };
+function load(){ try{ const s=localStorage.getItem(SK); if(s) S=JSON.parse(s); }catch(e){} }
+function save(){ localStorage.setItem(SK,JSON.stringify(S)); }
+load();
+
+function today(){ return new Date().toISOString().split('T')[0]; }
+const TD = today();
+function getDay(d){ if(!S.days[d]) S.days[d]={}; return S.days[d]; }
+function dow(ds){ return new Date(ds+'T12:00:00').getDay(); }
+function isGymDay(ds){ const d=dow(ds); return d===1||d===3||d===5; }
+function isWeekend(ds){ const d=dow(ds); return d===0||d===6; }
+function isPGD(){ return TD>='2025-08-08'; }
+
+function daysLeft(){
+  if(!S.cfg||!S.cfg.end) return '—';
+  return Math.max(0,Math.ceil((new Date(S.cfg.end+'T23:59:59')-new Date())/86400000));
+}
+
+function fmtDate(ds){
+  return new Date(ds+'T12:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+}
+
+function fmtDateShort(ds){
+  const d=new Date(ds+'T12:00:00');
+  return d.getDate()+'/'+(d.getMonth()+1);
+}
+
+// ── SETUP ──
+function setupSave(){
+  const name=document.getElementById('su-name').value.trim();
+  const start=document.getElementById('su-start').value;
+  const end=document.getElementById('su-end').value;
+  const person=document.getElementById('su-person').value.trim();
+  if(!name||!start||!end){ toast('Fill in all required fields'); return; }
+  if(start>=end){ toast('End date must be after start'); return; }
+  S.cfg={name,start,end,person};
+  save();
+  document.getElementById('setupScreen').classList.add('hidden');
+  showApp();
+}
+
+// ── SETTINGS ──
+function openSettings(){
+  if(S.cfg){
+    document.getElementById('cfg-name').value=S.cfg.name||'';
+    document.getElementById('cfg-start').value=S.cfg.start||'';
+    document.getElementById('cfg-end').value=S.cfg.end||'';
+    document.getElementById('cfg-person').value=S.cfg.person||'';
+    document.getElementById('cfg-goal').value=S.goalWeight||'';
+  }
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); }
+function saveSettings(){
+  const name=document.getElementById('cfg-name').value.trim();
+  const start=document.getElementById('cfg-start').value;
+  const end=document.getElementById('cfg-end').value;
+  const person=document.getElementById('cfg-person').value.trim();
+  const goal=parseFloat(document.getElementById('cfg-goal').value);
+  if(!name||!start||!end){ toast('Fill in name and dates'); return; }
+  if(start>=end){ toast('End must be after start'); return; }
+  S.cfg={name,start,end,person};
+  if(goal) S.goalWeight=goal;
+  save();
+  closeSettings();
+  
+  // Force a full UI refresh so the new dates apply everywhere instantly
+  updateHeader();
+  updateCompletion();
+  renderWeight();
+  if(document.getElementById('page-streaks').classList.contains('active')) renderStreaks();
+  if(document.getElementById('page-plan').classList.contains('active')) renderPlan();
+  
+  toast('Settings saved');
+}
+function resetAll(){
+  if(!confirm('Reset everything? This cannot be undone.')) return;
+  localStorage.removeItem(SK);
+  location.reload();
+}
+
+// ── SHOW APP ──
+function showApp(){
+  document.getElementById('mainHeader').style.display='';
+  document.getElementById('mainPulse').style.display='';
+  document.getElementById('mainTabs').style.display='';
+  updateHeader();
+  initToday();
+}
+
+function updateHeader(){
+  if(!S.cfg) return;
+  document.getElementById('hdrTitle').textContent=S.cfg.name;
+  document.getElementById('hdrDays').textContent=daysLeft();
+  const now=new Date();
+  document.getElementById('hdrDate').textContent=now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+  const startFmt=new Date(S.cfg.start+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  const endFmt=new Date(S.cfg.end+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  document.getElementById('hdrRange').textContent=startFmt+' → '+endFmt;
+}
+
+// ── TODAY INIT ──
+function initToday(){
+  const d=getDay(TD);
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const gymRow=document.getElementById('ci-gym');
+  if(isGymDay(TD)){
+    document.getElementById('gymSub').textContent=days[dow(TD)]+' — gym day';
+  } else {
+    gymRow.classList.add('na');
+    document.getElementById('dr-gym').textContent='rest';
+    document.getElementById('gymSub').textContent='Not a gym day';
+  }
+  if(isPGD()&&isWeekend(TD)) document.getElementById('pgdBlock').style.display='';
+
+  // swim warn
+  const yd=new Date(); yd.setDate(yd.getDate()-1);
+  const yds=yd.toISOString().split('T')[0];
+  const yDay=S.days[yds]||{};
+  if(yDay.hasOwnProperty('swim')&&!yDay.swim&&!d.swim){
+    document.getElementById('swimWarn').style.display='';
+  }
+
+  // website count
+  updateWebMeta();
+
+  // restore checks
+  ['gym','swim','diet','breakfast','lunch','whey','dinner','website','pgd'].forEach(k=>{
+    if(d[k]) applyCheck(k,true);
+    const so=document.getElementById('so-'+k);
+    if(so&&d[k]) so.classList.add('open');
+    const sk=k+'Sub';
+    if(d[sk]) document.querySelectorAll('#so-'+k+' .sub-chip').forEach(b=>b.classList.toggle('on',d[sk].includes(b.textContent)));
+  });
+
+  updateCompletion();
+  renderHeatmap();
+}
+
+function updateWebMeta(){
+  const now=new Date(); const dn=now.getDay();
+  const mon=new Date(now); mon.setDate(now.getDate()-((dn+6)%7));
+  let c=0;
+  for(let i=0;i<7;i++){
+    const d2=new Date(mon); d2.setDate(mon.getDate()+i);
+    const ds=d2.toISOString().split('T')[0];
+    if(S.days[ds]&&S.days[ds].website) c++;
+  }
+  const el=document.getElementById('webMeta');
+  if(el) el.textContent=c+'/2 this week';
+}
+
+// ── TOGGLE ──
+function toggle(key){
+  const d=getDay(TD);
+  d[key]=!d[key];
+  applyCheck(key,d[key]);
+  if(key==='swim'&&d[key]) document.getElementById('swimWarn').style.display='none';
+  if(key==='website') updateWebMeta();
+  save(); updateCompletion(); renderHeatmap();
+  if(d[key]) toast(toastMsg(key));
+}
+
+function toggleMeal(key){
+  const d=getDay(TD);
+  d[key]=!d[key];
+  applyCheck(key,d[key]);
+  const so=document.getElementById('so-'+key);
+  if(so) so.classList.toggle('open',!!d[key]);
+  save(); updateCompletion();
+}
+
+function chip(e,meal,val){
+  e.stopPropagation();
+  const d=getDay(TD);
+  const k=meal+'Sub';
+  if(!d[k]) d[k]=[];
+  const i=d[k].indexOf(val);
+  i>-1?d[k].splice(i,1):d[k].push(val);
+  document.querySelectorAll('#so-'+meal+' .sub-chip').forEach(b=>b.classList.toggle('on',d[k].includes(b.textContent)));
+  save();
+}
+
+function applyCheck(key,on){
+  const ci=document.getElementById('ci-'+key);
+  const dr=document.getElementById('dr-'+key);
+  if(ci) ci.classList.toggle('checked',!!on);
+  if(dr){ dr.textContent=on?'done':'—'; }
+}
+
+function toastMsg(k){
+  return {gym:'Gym logged',swim:'Swim done',diet:'Diet locked',breakfast:'Breakfast ✓',
+    lunch:'Lunch ✓',whey:'Whey ✓',dinner:'Dinner ✓',website:'Session logged',pgd:'PGD done'}[k]||'Logged';
+}
+
+// ── COMPLETION ──
+function calcPct(ds){
+  const d=S.days[ds]||{};
+  let t=0,n=0;
+  if(isGymDay(ds)){t++;if(d.gym)n++;}
+  t++;if(d.swim)n++;
+  t++;if(d.diet)n++;
+  ['breakfast','lunch','dinner'].forEach(m=>{t++;if(d[m])n++;});
+  t++;if(d.website)n++;
+  if(isPGD()&&isWeekend(ds)){t++;if(d.pgd)n++;}
+  return t?Math.round(n/t*100):0;
+}
+
+function updateCompletion(){
+  const pct=calcPct(TD);
+  getDay(TD).completePct=pct; save();
+  document.getElementById('pulseFill').style.width=pct+'%';
+  document.getElementById('pulsePct').textContent=pct+'%';
+  document.getElementById('hdrDays').textContent=daysLeft();
+
+  // section metas
+  const d=getDay(TD);
+  const fm=document.getElementById('fitMeta');
+  if(fm){
+    const parts=[];
+    if(isGymDay(TD)) parts.push(d.gym?'gym ✓':'gym ○');
+    parts.push(d.swim?'swim ✓':'swim ○');
+    fm.textContent=parts.join(' · ');
+  }
+  const food=document.getElementById('foodMeta');
+  if(food){
+    const done=['diet','breakfast','lunch','dinner'].filter(k=>d[k]).length;
+    food.textContent=done+'/4';
+  }
+}
+
+// ── HEATMAP ──
+function renderHeatmap(){
+  const grid=document.getElementById('hmGrid');
+  if(!grid) return;
+  grid.innerHTML='';
+  const now=new Date();
+  const dn=now.getDay();
+  const mon=new Date(now);
+  mon.setDate(now.getDate()-((dn+6)%7)-42);
+
+  for(let i=0;i<49;i++){
+    const d=new Date(mon); d.setDate(mon.getDate()+i);
+    const ds=d.toISOString().split('T')[0];
+    const cell=document.createElement('div');
+    cell.className='hm-cell';
+    const isFuture=ds>TD;
+    const isStart=S.cfg&&ds<S.cfg.start;
+    if(isFuture||isStart){
+      cell.classList.add('hm-f');
+    } else {
+      const pct=(S.days[ds]&&S.days[ds].completePct)||calcPct(ds);
+      if(pct===0) cell.classList.add('hm-0');
+      else if(pct<40) cell.classList.add('hm-1');
+      else if(pct<60) cell.classList.add('hm-2');
+      else if(pct<80) cell.classList.add('hm-3');
+      else cell.classList.add('hm-4');
+    }
+    if(ds===TD) cell.classList.add('hm-today');
+    grid.appendChild(cell);
+  }
+}
+
+// ── WEIGHT ──
+let wChartInst=null;
+function logWeight(){
+  const v=parseFloat(document.getElementById('wInput').value);
+  if(!v||v<30||v>250){toast('Enter a valid weight');return;}
+  S.weights=S.weights.filter(w=>w.date!==TD);
+  S.weights.push({date:TD,val:v});
+  S.weights.sort((a,b)=>a.date.localeCompare(b.date));
+  save();
+  document.getElementById('wInput').value='';
+  renderWeight();
+  toast('Weight: '+v+' kg logged');
+}
+
+function saveGoalWeight(){
+  const v=parseFloat(document.getElementById('wGoalInput').value);
+  if(!v){toast('Enter a goal weight');return;}
+  S.goalWeight=v; save();
+  renderWeight();
+  toast('Goal set: '+v+' kg');
+}
+
+function delWeight(ds){
+  S.weights=S.weights.filter(w=>w.date!==ds); save(); renderWeight();
+}
+
+function renderWeight(){
+  if(S.goalWeight) document.getElementById('wGoalInput').value=S.goalWeight;
+  const latest=S.weights[S.weights.length-1];
+  document.getElementById('ws-cur').textContent=latest?latest.val+' kg':'—';
+  if(S.goalWeight&&latest){
+    const gap=(latest.val-S.goalWeight).toFixed(1);
+    const el=document.getElementById('ws-gap');
+    el.textContent=gap>0?'↓ '+gap+' kg':'On target';
+    el.className='w-stat-val'+(gap>0?' red':' grn');
+  } else { document.getElementById('ws-gap').textContent='—'; }
+  if(S.weights.length>=2){
+    const r=S.weights.slice(-7);
+    const diff=(r[r.length-1].val-r[0].val).toFixed(1);
+    const el=document.getElementById('ws-trend');
+    el.textContent=(diff>0?'+':'')+diff+' kg';
+    el.className='w-stat-val'+(parseFloat(diff)<0?' grn':parseFloat(diff)>0?' red':'');
+  } else { document.getElementById('ws-trend').textContent='—'; }
+  renderWChart();
+  renderWHist();
+}
+
+function renderWChart(){
+  const canvas=document.getElementById('wChart');
+  if(!canvas) return;
+  canvas.width=canvas.offsetWidth||320;
+
+  if(wChartInst){ wChartInst.destroy(); wChartInst=null; }
+
+  if(S.weights.length<2){
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#b0a690';
+    ctx.font='11px Sentient, serif';
+    ctx.textAlign='center';
+    ctx.fillText('Log at least 2 weigh-ins to see chart',canvas.width/2,80);
+    return;
+  }
+
+  const labels=S.weights.map(w=>fmtDateShort(w.date));
+  const data=S.weights.map(w=>w.val);
+  const goalLine=S.goalWeight?Array(data.length).fill(S.goalWeight):null;
+  const minY=Math.min(...data,(S.goalWeight||Infinity))-1;
+  const maxY=Math.max(...data)+0.8;
+
+  const datasets=[{
+    label:'Weight',data,
+    borderColor:'#9e1a1a',borderWidth:1.5,
+    pointBackgroundColor:'#9e1a1a',pointRadius:3,pointHoverRadius:5,
+    tension:0.35,fill:false,
+  }];
+  if(goalLine) datasets.push({
+    label:'Goal',data:goalLine,
+    borderColor:'#c8bfaa',borderWidth:1,borderDash:[4,4],
+    pointRadius:0,fill:false,
+  });
+
+  wChartInst=new Chart(canvas,{
+    type:'line',
+    data:{labels,datasets},
+    options:{
+      responsive:false,animation:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#f5f0e6',borderColor:'#c8bfaa',borderWidth:1,
+          titleColor:'#8a7d6a',bodyColor:'#1a1612',
+          titleFont:{family:'Sentient, serif',size:10},
+          bodyFont:{family:'Sentient, serif',size:12,weight:'500'},
+          padding:8,
+          callbacks:{label:ctx=>ctx.dataset.label==='Goal'?'Goal: '+S.goalWeight+' kg':ctx.parsed.y.toFixed(1)+' kg'}
+        }
+      },
+      scales:{
+        x:{
+          grid:{color:'#e0d9cc',lineWidth:0.5},
+          ticks:{color:'#b0a690',font:{family:'Sentient, serif',size:9},maxRotation:0,maxTicksLimit:5},
+          border:{color:'#c8bfaa',width:0.5}
+        },
+        y:{
+          grid:{color:'#e0d9cc',lineWidth:0.5},
+          ticks:{color:'#b0a690',font:{family:'Sentient, serif',size:9},callback:v=>v.toFixed(1),maxTicksLimit:6},
+          border:{color:'#c8bfaa',width:0.5},
+          min:minY,max:maxY
+        }
+      }
+    }
+  });
+}
+
+function renderWHist(){
+  const el=document.getElementById('wHistList');
+  if(!S.weights.length){el.innerHTML='<div class="empty">No weigh-ins logged yet</div>';return;}
+  const rev=[...S.weights].reverse();
+  el.innerHTML=rev.map((w,i)=>{
+    const prev=rev[i+1];
+    let deltaHtml='<span class="w-hist-delta"></span>';
+    if(prev){
+      const d=(w.val-prev.val).toFixed(1);
+      const col=parseFloat(d)<0?'#3a6e3a':parseFloat(d)>0?'#9e1a1a':'#b0a690';
+      deltaHtml=`<span class="w-hist-delta" style="color:${col}">${parseFloat(d)>0?'+':''}${d}</span>`;
+    }
+    return `<div class="w-hist-row">
+      <span class="w-hist-date">${fmtDate(w.date)}</span>
+      <span class="w-hist-val">${w.val} kg</span>
+      ${deltaHtml}
+      <span class="w-hist-del" onclick="delWeight('${w.date}')">×</span>
+    </div>`;
+  }).join('');
+}
+
+// ── STREAKS ──
+function calcStreaks(){
+  const ds=Object.keys(S.days).sort();
+  let overall=0,swim=0,gym=0,diet=0;
+  for(let i=ds.length-1;i>=0;i--){
+    const d2=ds[i]; if(d2>TD) continue;
+    const pct=S.days[d2].completePct||calcPct(d2);
+    if(pct>=80) overall++; else break;
+  }
+  for(let i=ds.length-1;i>=0;i--){
+    const d2=ds[i]; if(d2>TD) continue;
+    if(S.days[d2].swim) swim++; else break;
+  }
+  for(let i=ds.length-1;i>=0;i--){
+    const d2=ds[i]; if(d2>TD) continue;
+    if(isGymDay(d2)&&S.days[d2].gym) gym++; else if(isGymDay(d2)) break;
+  }
+  for(let i=ds.length-1;i>=0;i--){
+    const d2=ds[i]; if(d2>TD) continue;
+    if(S.days[d2].diet) diet++; else break;
+  }
+  return {overall,swim,gym,diet};
+}
+
+function renderStreaks(){
+  const s=calcStreaks();
+  document.getElementById('sk-overall').textContent=s.overall;
+  document.getElementById('sk-swim').textContent=s.swim;
+  document.getElementById('sk-gym').textContent=s.gym;
+  document.getElementById('sk-diet').textContent=s.diet;
+  renderWeekGrid();
+  renderStats();
+}
+
+function renderWeekGrid(){
+  const el=document.getElementById('weekGrid');
+  if(!el) return; el.innerHTML='';
+  const now=new Date(); const dn=now.getDay();
+  const mon=new Date(now); mon.setDate(now.getDate()-((dn+6)%7));
+  for(let i=0;i<7;i++){
+    const d=new Date(mon); d.setDate(mon.getDate()+i);
+    const ds=d.toISOString().split('T')[0];
+    const cell=document.createElement('div');
+    cell.className='hm-cell';
+    cell.style.borderRadius='1px';
+    const isFuture=ds>TD;
+    if(isFuture){ cell.classList.add('hm-f'); }
+    else {
+      const pct=(S.days[ds]&&S.days[ds].completePct)||calcPct(ds);
+      if(pct===0) cell.classList.add('hm-0');
+      else if(pct<40) cell.classList.add('hm-1');
+      else if(pct<60) cell.classList.add('hm-2');
+      else if(pct<80) cell.classList.add('hm-3');
+      else cell.classList.add('hm-4');
+    }
+    if(ds===TD) cell.classList.add('hm-today');
+    el.appendChild(cell);
+  }
+}
+
+function renderStats(){
+  const allDs=Object.keys(S.days).filter(d2=>d2<=TD).sort();
+  const tot=allDs.length;
+  const full=allDs.filter(d2=>(S.days[d2].completePct||calcPct(d2))>=80).length;
+  const swimD=allDs.filter(d2=>S.days[d2].swim).length;
+  const gymD=allDs.filter(d2=>isGymDay(d2)&&S.days[d2].gym).length;
+  const gymP=allDs.filter(d2=>isGymDay(d2)).length;
+  const dietD=allDs.filter(d2=>S.days[d2].diet).length;
+  const webD=allDs.filter(d2=>S.days[d2].website).length;
+  const avg=tot?Math.round(allDs.reduce((a,d2)=>a+(S.days[d2].completePct||calcPct(d2)),0)/tot):0;
+  const rows=[
+    ['Days tracked',tot],['Full days (≥ 80%)',full+' / '+tot],
+    ['Swim sessions',swimD],['Gym sessions',gymD+' / '+gymP],
+    ['Diet days',dietD],['Website sessions',webD],['Avg completion',avg+'%'],
+  ];
+  if(S.cfg){
+    const start=new Date(S.cfg.start+'T12:00:00');
+    const end=new Date(S.cfg.end+'T12:00:00');
+    const total=Math.ceil((end-start)/86400000);
+    const elapsed=Math.max(0,Math.ceil((new Date()-start)/86400000));
+    rows.push(['Challenge progress',elapsed+' / '+total+' days']);
+  }
+  document.getElementById('statsRows').innerHTML=rows.map(([l,v])=>
+    `<div class="stat-row"><span class="stat-lbl">${l}</span><span class="stat-val">${v}</span></div>`
+  ).join('');
+}
+
+// ── LOG ──
+function renderLog(){
+  const el=document.getElementById('logList');
+  const labels={gym:'Gym',swim:'Swim',diet:'Diet',breakfast:'Breakfast',lunch:'Lunch',whey:'Whey',dinner:'Dinner',website:'Website',pgd:'PGD'};
+  const ds=Object.keys(S.days).filter(d2=>S.days[d2]&&Object.keys(S.days[d2]).filter(k=>k!=='completePct').length>0).sort().reverse();
+  document.getElementById('logLabel').textContent='▪ Activity log — '+ds.length+' days';
+  if(!ds.length){el.innerHTML='<div class="empty">Nothing logged yet — complete your first day</div>';return;}
+  el.innerHTML=ds.slice(0,90).map(d2=>{
+    const day=S.days[d2];
+    const pct=day.completePct||calcPct(d2);
+    const cls=pct>=80?'full':pct>0?'part':'zero';
+    const tags=Object.keys(labels).filter(k=>day[k]).map(k=>`<span class="hist-tag done">${labels[k]}</span>`).join('');
+    return `<div class="hist-day">
+      <div class="hist-hd">
+        <span class="hist-date">${fmtDate(d2)}</span>
+        <div class="hist-prog"><div class="hist-prog-fill" style="width:${pct}%"></div></div>
+        <span class="hist-pct ${cls}">${pct}%</span>
+      </div>
+      <div class="hist-body">
+        <div class="hist-tags">${tags||'<span class="hist-tag">Nothing logged</span>'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── PLAN DYNAMIC RENDER ──
+let userSelectedWeek = null;
+
+function changePlanWeek() {
+  const sel = document.getElementById('planWeekSelect');
+  if(sel) {
+    userSelectedWeek = parseInt(sel.value);
+    renderPlan();
+  }
+}
+
+function renderPlan(){
+  const planEl = document.getElementById('planContainer');
+  if(!S.cfg || !S.cfg.start) {
+    planEl.innerHTML = '<div class="empty">Set up your challenge to view the plan</div>';
+    return;
+  }
+  
+  const start = new Date(S.cfg.start + 'T00:00:00');
+  const now = new Date();
+  const diffTime = now - start;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  let currentWeek = Math.floor(diffDays / 7) + 1;
+  
+  if(currentWeek < 1) currentWeek = 1;
+  if(currentWeek > 26) currentWeek = 26;
+  
+  let displayWeek = userSelectedWeek || currentWeek;
+  
+  let block = 1, bName = "Foundation", cals = 1750, pro = "120g";
+  let liftHTML = "", swimHTML = "";
+  
+  if(displayWeek >= 1 && displayWeek <= 7) {
+    block = 1; bName = "Foundation"; cals = 1750; pro = "120g";
+    liftHTML = `<strong>Day A (Push/Core):</strong> Goblet squat (3x12-15), DB chest press (3x10-12), DB shoulder press, Lateral raises, Plank, Dead bug<br><br>
+                <strong>Day B (Pull/Hinge):</strong> RDL (3x12), Cable row (3x12), Lat pulldown, Face pulls, Hip thrust, Hollow body hold<br><br>
+                <strong>Day C (Lower/Core):</strong> Bulgarian split squat (3x10), Leg press (3x15), Leg curl, Calf raises, Side plank, Russian twist`;
+    swimHTML = `<strong>5 sessions/week, 40–45 min</strong><br>
+                • Warm-up: 200m easy freestyle<br>
+                • Main set: 6 × 100m (20 sec rest)<br>
+                • Kick set: 4 × 50m with kickboard<br>
+                • Cool-down: 100m backstroke easy`;
+  } else if (displayWeek >= 8 && displayWeek <= 13) {
+    block = 2; bName = "Build"; cals = 1700; pro = "125g";
+    liftHTML = `<strong>Day A (Heavy Push):</strong> Back squat (4x8), Incline DB press (4x8-10), Arnold press, Tricep dips, Cable crunch, Plank tap<br><br>
+                <strong>Day B (Heavy Pull):</strong> Conventional deadlift (4x5-6), Pull-up (4x6-8), Cable row, Barbell hip thrust, Bicep curl, Knee raise<br><br>
+                <strong>Day C (Lower/Accessory):</strong> Hack squat (4x8), RDL (3x10), Walking lunges, Leg curl, Calf raise, Ab rollout`;
+    swimHTML = `<strong>5–6 sessions/week, 45–55 min</strong><br>
+                • Warm-up: 300m mixed strokes<br>
+                • Main set: 8 × 100m descending (20 sec rest)<br>
+                • Interval set: 4 × 50m sprint (40 sec rest)<br>
+                • Endurance: 1 × 400m continuous<br>
+                • Cool-down: 100m easy`;
+  } else if (displayWeek >= 14 && displayWeek <= 20) {
+    block = 3; bName = "Intensify"; cals = 1650; pro = "130g";
+    liftHTML = `<strong>Supersets Format (4 rounds back-to-back)</strong><br><br>
+                <strong>Day A:</strong> Squat + Push-up → RDL + Row → Hip thrust + Plank<br><br>
+                <strong>Day B:</strong> Deadlift + Pull-up → Lunge + Shoulder press → Curl + Tricep<br><br>
+                <strong>Day C:</strong> Split squat + Inc. press → Leg press + Face pull → Calf + Core circuit`;
+    swimHTML = `<strong>5–6 sessions/week, 50–60 min</strong><br>
+                • Warm-up: 400m easy<br>
+                • Threshold set: 4 × 200m hard (30 sec rest)<br>
+                • Speed set: 6 × 50m all-out (45 sec rest)<br>
+                • Pull buoy set: 4 × 100m upper body only<br>
+                • Cool-down: 200m easy`;
+  } else {
+    block = 4; bName = "Peak"; cals = 1600; pro = "130-135g";
+    liftHTML = `<strong>Strength Maintenance + 10 min HIIT</strong><br><br>
+                <strong>Day A:</strong> Squat 4x5 heavy + Chest press 4x6 + Core + HIIT<br><br>
+                <strong>Day B:</strong> Deadlift 4x4 heavy + Pull-up 4x6 + Glutes + HIIT<br><br>
+                <strong>Day C:</strong> Hip thrust 4x8 + Split squat 3x8 + Shoulder circuit + HIIT`;
+    swimHTML = `<strong>5–6 sessions/week, 60 min</strong><br>
+                • Warm-up: 400m<br>
+                • Race-pace set: 3 × 300m best effort (40 sec rest)<br>
+                • Sprint finisher: 8 × 25m all-out (30 sec rest)<br>
+                • Mixed stroke: 4 × 100m alt freestyle/backstroke<br>
+                • Cool-down: 200m very easy`;
+  }
+  
+  let options = '';
+  for(let i=1; i<=26; i++) {
+    options += `<option value="${i}" ${i === displayWeek ? 'selected' : ''}>Week ${i} ${i===currentWeek ? '(Current)' : ''}</option>`;
+  }
+  
+  const html = `
+    <div class="sec-gap"></div>
+    <div class="sec-label">
+      <span>▪ Timeline</span>
+      <select id="planWeekSelect" onchange="changePlanWeek()" style="font-size:10px; padding:2px; font-family:var(--sans); background:transparent; border:1px solid var(--rule2); border-radius:2px; color:var(--ink); outline:none;">
+        ${options}
+      </select>
+    </div>
+    <div class="drow" style="background:var(--cream2); border-left:3px solid var(--red);">
+      <div class="drow-body" style="padding-left:12px;">
+        <div class="drow-name">Week ${displayWeek} of 26: Block ${block} — ${bName}</div>
+        <div class="drow-sub">Goal: ${cals} kcal | Minimum ${pro} Protein</div>
+      </div>
+    </div>
+
+    <div class="sec-gap"></div>
+    <div class="sec-label">▪ Lifting Guidelines (3x/Week)</div>
+    <div style="padding: 12px 18px; font-size: 11px; color: var(--ink2); line-height: 1.6; border-bottom: 1px solid var(--rule);">
+      ${liftHTML}
+    </div>
+
+    <div class="sec-gap"></div>
+    <div class="sec-label">▪ Swim Protocol</div>
+    <div style="padding: 12px 18px; font-size: 11px; color: var(--ink2); line-height: 1.6; border-bottom: 1px solid var(--rule);">
+      ${swimHTML}
+    </div>
+
+    <div class="sec-gap"></div>
+    <div class="sec-label">▪ Daily Food Guide</div>
+    <div style="padding: 12px 18px; font-size: 11px; color: var(--ink2); line-height: 1.6; border-bottom: 1px solid var(--rule);">
+      <strong>Breakfast (~300 kcal):</strong> 2 whole eggs + 2 slices atta bread + black coffee (no honey)<br><br>
+      <strong>Lunch (~500 kcal):</strong> 300g Sabji (paneer 75g OR 2 eggs OR dal) + 2 atta rotis + salad<br><br>
+      <strong>Pre-workout (~180 kcal):</strong> 1 banana + 1 tbsp peanut butter<br><br>
+      <strong>Post-workout (~200-250 kcal):</strong> 1 scoop whey OR 3 boiled eggs (Swim only: 2 eggs + curd)<br><br>
+      <strong>Dinner (~400-450 kcal):</strong> Leftover sabji + 1 small bowl rice (100g) OR 1 roti<br><br>
+      <div style="background: var(--red-pale); color: var(--red); padding: 8px; margin-top: 10px; border-radius: 2px;">
+        <strong>Rule:</strong> Protein first at every meal. Water: 3-3.5L/day.
+      </div>
+    </div>
+    <div class="sec-gap"></div>
+  `;
+  planEl.innerHTML = html;
+}
+
+// ── TABS ──
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active',['today','weight','streaks','log','plan','rules'][i]===name);
+  });
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(name==='weight') renderWeight();
+  if(name==='streaks') renderStreaks();
+  if(name==='log') renderLog();
+  if(name==='plan') renderPlan();
+}
+
+// ── TOAST ──
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// ── BOOT ──
+if(S.cfg){
+  document.getElementById('setupScreen').classList.add('hidden');
+  showApp();
+} else {
+  // Pre-fill dates for July 1 to Dec 31
+  document.getElementById('su-start').value='2026-07-01';
+  document.getElementById('su-end').value='2026-12-31';
+}
+
+window.addEventListener('resize',()=>{
+  if(document.getElementById('page-weight').classList.contains('active')) renderWChart();
+});
+</script>
+</body>
+</html>
